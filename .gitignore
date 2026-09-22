@@ -1,0 +1,62 @@
+# Build outputs
+[Bb]in/
+[Oo]bj/
+out/
+publish/
+
+# Visual Studio / Rider
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.idea/
+
+# Android
+*.apk
+*.aab
+*.ap_
+*.dex
+*.jks
+*.keystore
+local.properties
+
+# iOS / macOS
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# MSIX / packaging
+AppPackages/
+BundleArtifacts/
+*.msix
+*.appx
+*.appxupload
+*.cer
+*.pfx
+
+# Code signing (private key material - never commit)
+build/signing/
+
+# NuGet
+*.nupkg
+**/packages/*
+!**/packages/build/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Rider/ReSharper
+_ReSharper*/
+*.DotSettings.user
+
+# OS files
+.DS_Store
+Thumbs.db

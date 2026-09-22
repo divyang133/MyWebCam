@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Isolated COM interop layer for the Windows 11 Frame Server virtual camera
+         (Media Foundation IMFVirtualCamera). Kept as its own assembly so the
+         highest-risk, most platform-specific code has no reach into the rest
+         of the app beyond the IVirtualCamera abstraction. See
+         /docs/WINDOWS_VIRTUAL_CAMERA.md.
+
+         Targets the 10.0.22621.0 (Windows 11 22H2) SDK contract specifically
+         - MFCreateVirtualCamera/IMFVirtualCamera are only declared from that
+         contract onward, unlike the rest of the solution's 10.0.19041.0
+         floor. This assembly is the actual reason the whole product has a
+         Windows 11 22H2+ floor; see docs/WINDOWS_VIRTUAL_CAMERA.md. -->
+    <TargetFramework>net10.0-windows10.0.22621.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Platforms>x64;ARM64</Platforms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!-- Exposes this assembly's [ComVisible] classes as a classic COM server
+         (a .comhost.dll build output) that regsvr32 can register - the
+         standard, NuGet-free .NET 5+ mechanism for a managed DLL to be
+         loadable by an arbitrary native COM client (here, the Windows Frame
+         Server service). See docs/WINDOWS_VIRTUAL_CAMERA.md for the
+         registration/installation steps this requires. -->
+    <EnableComHosting>true</EnableComHosting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LocalWebcam.Shared\LocalWebcam.Shared.csproj" />
+    <ProjectReference Include="..\LocalWebcam.Video\LocalWebcam.Video.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- DirectN: actively maintained (published Jan 2026) COM/Media
+         Foundation interop library. Unlike Vortice.MediaFoundation (used
+         elsewhere in this solution for *consuming* MF COM objects),
+         DirectN's Extensions.Com layer is what actually supports *exposing*
+         a C# class as a native COM server implementing MF interfaces like
+         IMFMediaSource/IMFMediaStream - a materially different, much less
+         common interop direction. -->
+    <PackageReference Include="DirectNCore" Version="1.18.0" />
+  </ItemGroup>
+
+</Project>

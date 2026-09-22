@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:LocalWebcam.Mobile.Controls"
+             xmlns:vm="clr-namespace:LocalWebcam.Mobile.ViewModels"
+             x:Class="LocalWebcam.Mobile.MainPage"
+             x:DataType="vm:MainViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="Black"
+             Title="Local Webcam">
+
+    <ContentPage.Resources>
+        <!-- Floating icon buttons: monochrome outline icons (bundled Material
+             Icons Outlined font instead of Segoe Fluent Icons, which isn't
+             available on Android) matching the Desktop app's style, each
+             with its own small translucent circular backdrop for legibility
+             over any video content - not a full-width dedicated bar taking
+             up its own strip of screen the way an earlier version did. -->
+        <Style x:Key="IconButtonStyle" TargetType="Button">
+            <Setter Property="BackgroundColor" Value="#4D000000" />
+            <Setter Property="BorderWidth" Value="0" />
+            <Setter Property="TextColor" Value="White" />
+            <Setter Property="FontFamily" Value="MaterialIconsOutlined" />
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="CornerRadius" Value="24" />
+            <Setter Property="WidthRequest" Value="48" />
+            <Setter Property="HeightRequest" Value="48" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinimumWidthRequest" Value="0" />
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid x:Name="RootLayoutGrid">
+
+        <!-- No BackgroundColor here: the native Android TextureView backing
+             this control throws UnsupportedOperationException if a background
+             drawable is applied to it. The parent Grid's black background
+             (set on the page itself now) only shows through the thin sliver
+             any given device's exact aspect ratio doesn't quite cover.
+             Centered + explicitly sized (code-behind, keyed off this page's
+             own SizeChanged - see OnRootLayoutGridSizeChanged's doc comment)
+             to cover the full screen at the correct aspect ratio, cropping
+             minimal overflow rather than stretching (distorts the image) or
+             letterboxing (leaves large black bars, looks "squished"). -->
+        <controls:CameraPreviewView x:Name="Preview" HorizontalOptions="Center" VerticalOptions="Center" />
+
+        <!-- Status/stats overlay - toggled by the bottom bar's info icon;
+             starts hidden so it doesn't cover the preview by default. -->
+        <Border IsVisible="{Binding IsInfoPanelVisible}"
+                BackgroundColor="#CC1E1E1E"
+                StrokeShape="RoundRectangle 12"
+                Margin="16"
+                Padding="16"
+                VerticalOptions="Start">
+            <VerticalStackLayout Spacing="6">
+                <Label Text="{Binding ResolutionText}" FontAttributes="Bold" TextColor="White" />
+                <Label Text="{Binding StatusText, StringFormat='Local status: {0}'}" TextColor="White" />
+                <Label Text="{Binding FpsText, StringFormat='Encoder FPS: {0}'}" TextColor="White" />
+                <Label Text="{Binding RemoteStatusText, StringFormat='Remote connection: {0}'}" TextColor="White" />
+                <Label Text="{Binding ErrorText}" TextColor="Red" />
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Floating icon buttons: no dedicated bar/strip reserving its own
+             screen space or background band - each button just floats
+             directly over the bottom of the video with its own small
+             translucent backdrop (set on IconButtonStyle). The ScrollView
+             is a safety net only: this row is sized to fit all five icons
+             on typical phone widths, but wrapping it means a narrower
+             device scrolls instead of permanently clipping the last icon
+             off-screen - it has no visible chrome of its own either. -->
+        <ScrollView Orientation="Horizontal" VerticalOptions="End" Margin="0,0,0,24">
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="12" Padding="12,0">
+                <Button Text="&#xe88e;" Command="{Binding ToggleInfoPanelCommand}" Style="{StaticResource IconButtonStyle}"
+                        ToolTipProperties.Text="Show/Hide Info" SemanticProperties.Description="Show or hide status info" />
+                <Button Text="{Binding StreamingToggleGlyph}" Command="{Binding ToggleStreamingCommand}" Style="{StaticResource IconButtonStyle}"
+                        ToolTipProperties.Text="Start/Stop Streaming" SemanticProperties.Description="Start or stop streaming" />
+                <Button Text="&#xefeb;" Command="{Binding SwitchCameraCommand}" Style="{StaticResource IconButtonStyle}"
+                        ToolTipProperties.Text="Switch Camera" SemanticProperties.Description="Switch Camera" />
+                <Button Text="&#xe80d;" Command="{Binding ShareLogsCommand}" Style="{StaticResource IconButtonStyle}"
+                        ToolTipProperties.Text="Share Logs" SemanticProperties.Description="Share Logs" />
+                <Button Text="&#xe1e2;" Command="{Binding OpenTetheringSettingsCommand}" Style="{StaticResource IconButtonStyle}"
+                        ToolTipProperties.Text="Open Tethering Settings (for USB connection)" SemanticProperties.Description="Open Tethering Settings for USB connection" />
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- Pairing approval overlay (spec section 7): shown while a
+             desktop is waiting for this device to Allow/Reject it. -->
+        <Grid IsVisible="{Binding IsPairingPromptVisible}" BackgroundColor="#CC000000">
+            <Border BackgroundColor="White"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="24"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    WidthRequest="300">
+                <VerticalStackLayout Spacing="16">
+                    <Label Text="New computer detected" FontAttributes="Bold" FontSize="18" HorizontalOptions="Center" />
+                    <Label Text="{Binding PairingComputerName}" FontSize="16" HorizontalOptions="Center" />
+                    <Label Text="Pairing code" FontSize="14" HorizontalOptions="Center" />
+                    <Label Text="{Binding PairingCode}" FontSize="32" FontAttributes="Bold" HorizontalOptions="Center" />
+                    <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                        <Button Text="&#xe86c;" FontFamily="MaterialIconsOutlined" FontSize="22" Command="{Binding AllowPairingCommand}"
+                                ToolTipProperties.Text="Allow" SemanticProperties.Description="Allow" />
+                        <Button Text="&#xe5c9;" FontFamily="MaterialIconsOutlined" FontSize="22" Command="{Binding RejectPairingCommand}"
+                                ToolTipProperties.Text="Reject" SemanticProperties.Description="Reject" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+    </Grid>
+
+</ContentPage>

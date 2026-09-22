@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LocalWebcam.Shared\LocalWebcam.Shared.csproj" />
+    <ProjectReference Include="..\LocalWebcam.Protocol\LocalWebcam.Protocol.csproj" />
+    <ProjectReference Include="..\LocalWebcam.Security\LocalWebcam.Security.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="LocalWebcam.Network.Tests" />
+  </ItemGroup>
+
+</Project>

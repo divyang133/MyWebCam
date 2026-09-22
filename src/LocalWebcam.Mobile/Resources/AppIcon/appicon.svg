@@ -1,0 +1,23 @@
+<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#0EA5E9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background layer ONLY - no phone/lens artwork here. That content
+       lives solely in appiconfg.svg (the foreground layer). Having both
+       files draw the same phone graphic (this one unshifted, the
+       foreground shifted for Android's adaptive-icon safe zone) made
+       MAUI's legacy (non-adaptive) icon generation composite both on top
+       of each other - confirmed on real hardware as a visibly "ghosted",
+       doubled phone outline in the generated mipmap/appicon.png. Keeping
+       the artwork in exactly one file, with the background as pure
+       background, avoids that regardless of the exact compositing
+       mechanism. -->
+  <rect width="1024" height="1024" rx="220" fill="url(#bg)"/>
+
+  <!-- Subtle inner glow -->
+  <rect x="24" y="24" width="976" height="976" rx="200" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="6"/>
+</svg>
