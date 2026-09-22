@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Android platform implementations (Camera2/CameraX capture, MediaCodec
+         hardware H.264 encoding, Android Keystore secure storage). -->
+    <TargetFramework>net10.0-android</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LocalWebcam.Shared\LocalWebcam.Shared.csproj" />
+    <ProjectReference Include="..\LocalWebcam.Video\LocalWebcam.Video.csproj" />
+    <ProjectReference Include="..\LocalWebcam.Security\LocalWebcam.Security.csproj" />
+    <ProjectReference Include="..\LocalWebcam.Network\LocalWebcam.Network.csproj" />
+  </ItemGroup>
+
+
+</Project>

@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+	<!-- StreamingForegroundService's <service> manifest entry is generated
+	     automatically from its [Service(...)] attribute (same mechanism as
+	     MainActivity's [Activity(...)]) - not hand-written here. -->
+	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true"></application>
+
+	<!-- Camera capture and hardware H.264 encoding (this phase). -->
+	<uses-permission android:name="android.permission.CAMERA" />
+	<uses-feature android:name="android.hardware.camera" android:required="true" />
+	<uses-feature android:name="android.hardware.camera.front" android:required="false" />
+
+	<!-- LAN networking used starting Phase 2. No traffic leaves the LAN;
+	     INTERNET is still required by Android for any Socket use, even
+	     loopback-adjacent local network I/O. See docs/ANDROID.md. -->
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.INTERNET" />
+
+	<!-- Foreground-service streaming notification, added when background
+	     streaming is implemented (spec section 13); declared here so the
+	     manifest doesn't need revisiting mid-phase. -->
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
+	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+</manifest>

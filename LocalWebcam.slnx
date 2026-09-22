@@ -1,0 +1,20 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LocalWebcam.Android/LocalWebcam.Android.csproj" />
+    <Project Path="src/LocalWebcam.Desktop/LocalWebcam.Desktop.csproj" />
+    <Project Path="src/LocalWebcam.Diagnostics/LocalWebcam.Diagnostics.csproj" />
+    <Project Path="src/LocalWebcam.Mobile/LocalWebcam.Mobile.csproj" />
+    <Project Path="src/LocalWebcam.Network/LocalWebcam.Network.csproj" />
+    <Project Path="src/LocalWebcam.Protocol/LocalWebcam.Protocol.csproj" />
+    <Project Path="src/LocalWebcam.Security/LocalWebcam.Security.csproj" />
+    <Project Path="src/LocalWebcam.Shared/LocalWebcam.Shared.csproj" />
+    <Project Path="src/LocalWebcam.Video/LocalWebcam.Video.csproj" />
+    <Project Path="src/LocalWebcam.VirtualCamera.Windows/LocalWebcam.VirtualCamera.Windows.csproj" />
+    <Project Path="src/LocalWebcam.Windows/LocalWebcam.Windows.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LocalWebcam.Network.Tests/LocalWebcam.Network.Tests.csproj" />
+    <Project Path="tests/LocalWebcam.Protocol.Tests/LocalWebcam.Protocol.Tests.csproj" />
+    <Project Path="tests/LocalWebcam.Video.Tests/LocalWebcam.Video.Tests.csproj" />
+  </Folder>
+</Solution>

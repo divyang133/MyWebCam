@@ -1,0 +1,130 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- Bumped from 10.0.19041.0: this project references LocalWebcam.VirtualCamera.Windows,
+         which requires the 10.0.22621.0 (Windows 11 22H2) contract for
+         MFCreateVirtualCamera/IMFVirtualCamera - see docs/WINDOWS_VIRTUAL_CAMERA.md.
+         The whole product already has this floor; this just makes the
+         Desktop project's own TFM consistent with that reality instead of
+         only the two virtual-camera-specific projects. -->
+    <TargetFramework>net10.0-windows10.0.22621.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.22621.0</TargetPlatformMinVersion>
+    <RootNamespace>LocalWebcam.Desktop</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+    <Platforms>x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <!-- WindowsAppSDKSelfContained resolves its native architecture from
+         $(Platform), falling back to $(RuntimeIdentifier) when Platform is
+         AnyCPU (e.g. building through LocalWebcam.slnx, which has no
+         per-project platform mapping). Default to win-x64 so both
+         `dotnet build LocalWebcam.slnx` and direct project builds work;
+         override with -p:RuntimeIdentifier=win-arm64 for ARM64. -->
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
+    <UseWinUI>true</UseWinUI>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Unpackaged (no MSIX) for now to simplify local dev/sideload; packaging is
+         revisited in Phase 6 (installers). -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <!-- This app has no localized strings of its own and only ever runs in
+         English - without this, a self-contained publish copies every
+         translated-resource satellite folder (~100 of them: de, fr, ja, zh,
+         ...) for every framework assembly (WinUI, WPF/WinForms interop
+         pulled in transitively by the Windows App SDK, etc.), even though
+         none of them are ever loaded. -->
+    <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
+    <!-- WinUI3 has no built-in system tray icon support; H.NotifyIcon is
+         the standard, actively-maintained library for this (raw
+         Shell_NotifyIcon P/Invoke is a lot of boilerplate to get right,
+         including the taskbar-restart message and per-monitor-DPI icon
+         sizing this package already handles). -->
+    <PackageReference Include="H.NotifyIcon.WinUI" Version="2.2.0" />
+    <!-- The on-screen preview renders through a SwapChainPanel instead of
+         an Image/WriteableBitmap - see SwapChainVideoRenderer's doc comment
+         for why. Direct3D11/DXGI/Direct2D1 versions pinned to match
+         LocalWebcam.Windows's existing Vortice.Direct3D11 reference. -->
+    <PackageReference Include="Vortice.Direct3D11" Version="3.8.3" />
+    <PackageReference Include="Vortice.Direct2D1" Version="3.8.3" />
+    <PackageReference Include="Vortice.DXGI" Version="3.8.3" />
+    <!-- Vortice.WinUI.ISwapChainPanelNative: the COM interface that
+         associates a raw DXGI swap chain with a XAML SwapChainPanel. -->
+    <PackageReference Include="Vortice.WinUI" Version="3.8.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LocalWebcam.Shared\LocalWebcam.Shared.csproj" />
+    <ProjectReference Include="..\LocalWebcam.Protocol\LocalWebcam.Protocol.csproj" />
+    <ProjectReference Include="..\LocalWebcam.Network\LocalWebcam.Network.csproj" />
+    <ProjectReference Include="..\LocalWebcam.Video\LocalWebcam.Video.csproj" />
+    <ProjectReference Include="..\LocalWebcam.Security\LocalWebcam.Security.csproj" />
+    <ProjectReference Include="..\LocalWebcam.Diagnostics\LocalWebcam.Diagnostics.csproj" />
+    <ProjectReference Include="..\LocalWebcam.Windows\LocalWebcam.Windows.csproj" />
+    <ProjectReference Include="..\LocalWebcam.VirtualCamera.Windows\LocalWebcam.VirtualCamera.Windows.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- <ApplicationIcon> above only embeds this as the .exe's own Win32
+         resource (Explorer, "Open with"); MainWindow.xaml.cs's
+         AppWindow.SetIcon call (for the running window's titlebar/taskbar
+         icon) needs the actual file present next to the exe at runtime. -->
+    <Content Include="Assets\AppIcon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- ProjectReference normally copies LocalWebcam.VirtualCamera.Windows's
+       dll/pdb/comhost.dll here automatically, but that mechanism doesn't
+       fire at all under PublishSingleFile - the SDK's "COM hosting does not
+       support self-contained deployments" warning turns into the comhost.dll
+       (and even the main .dll) being silently absent from a single-file
+       publish's output entirely, not merely left framework-dependent.
+       Worse, under PublishSingleFile *all* of Desktop's own managed
+       dependencies (LocalWebcam.Shared.dll, DirectNCore.dll, etc.) get
+       bundled inside the single exe instead of left as loose files - but
+       the comhost.dll is loaded by a *separate* out-of-process host (the
+       Frame Server, via regsvr32/COM activation), which can't see anything
+       bundled inside Desktop.exe and needs those same dependencies as real
+       files on disk to load itself. Confirmed on real hardware: even with
+       comhost.dll + its own .deps.json/.runtimeconfig.json present,
+       registration still failed with regsvr32 exit code 5
+       (DllRegisterServer failed) until its *entire* own build output
+       (including transitive dependencies) was copied alongside it - so
+       copy the whole folder rather than cherry-picking files. See
+       docs/WINDOWS_VIRTUAL_CAMERA.md. -->
+  <Target Name="CopyVirtualCameraRuntimeConfig" AfterTargets="Build;Publish">
+    <PropertyGroup>
+      <VirtualCameraOutDir>$(MSBuildThisFileDirectory)..\LocalWebcam.VirtualCamera.Windows\bin\$(Configuration)\net10.0-windows10.0.22621.0\</VirtualCameraOutDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <VirtualCameraRuntimeFiles Include="$(VirtualCameraOutDir)*.dll" />
+      <VirtualCameraRuntimeFiles Include="$(VirtualCameraOutDir)*.json" />
+    </ItemGroup>
+    <!-- $(OutDir) covers a plain Build. A `dotnet publish` run copies
+         $(OutDir)'s contents to $(PublishDir) as part of the Publish target
+         itself, which completes *before* this AfterTargets hook runs - so
+         for publish, these files also need to be copied directly into
+         $(PublishDir), or they'd be missing from the actual publish output
+         despite being present in bin\ (confirmed: a published build was
+         missing both files even though a plain build had them). -->
+    <Copy SourceFiles="@(VirtualCameraRuntimeFiles)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(VirtualCameraRuntimeFiles)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="'$(PublishDir)' != ''" />
+  </Target>
+
+</Project>

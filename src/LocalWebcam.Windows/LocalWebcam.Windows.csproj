@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Windows platform implementations (Media Foundation decoding, DPAPI secure storage, etc.).
+         Targets the Windows 10.0.19041.0 API contract, the minimum required for the
+         Windows App SDK / Media Foundation interop surface used here. -->
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Platforms>x64;ARM64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LocalWebcam.Shared\LocalWebcam.Shared.csproj" />
+    <ProjectReference Include="..\LocalWebcam.Video\LocalWebcam.Video.csproj" />
+    <ProjectReference Include="..\LocalWebcam.Security\LocalWebcam.Security.csproj" />
+    <ProjectReference Include="..\LocalWebcam.Network\LocalWebcam.Network.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Actively maintained (last published Dec 2024), pure-managed mDNS/Bonjour
+         browser; no native mDNSResponder dependency required. Used only to
+         browse for phones advertising _localwebcam._tcp — advertising is the
+         Android side's job (LocalWebcam.Android uses NsdManager instead). -->
+    <PackageReference Include="Zeroconf" Version="3.7.16" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.12" />
+    <!-- Actively maintained (published Mar 2026) managed binding over Media
+         Foundation's COM interfaces. No official managed MF wrapper ships in
+         the BCL; hand-rolling ComImport declarations for the dozens of MF
+         interfaces used here would be its own large, error-prone project. -->
+    <PackageReference Include="Vortice.MediaFoundation" Version="3.8.3" />
+    <!-- Needed to hand the H.264 decoder MFT a D3D11 device via
+         IMFDXGIDeviceManager (MFT_MESSAGE_SET_D3D_MANAGER) so it decodes on
+         the GPU instead of falling back to software decode, which is what
+         it does by default with no D3D manager attached - confirmed via
+         GPU engine counters showing zero video-decode engine activity
+         before this. -->
+    <PackageReference Include="Vortice.Direct3D11" Version="3.8.3" />
+  </ItemGroup>
+
+</Project>
